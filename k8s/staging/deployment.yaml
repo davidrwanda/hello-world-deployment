@@ -2,6 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: hello-world-api
+  annotations:
+    branch: "{{ BRANCH_NAME }}"
+    version: "{{ VERSION_TAG }}"
 spec:
   replicas: 2
   selector:
@@ -14,6 +17,20 @@ spec:
     spec:
       containers:
       - name: hello-world-api
-        image: your-docker-image:staging
+        image: solvworld/hello-world-api:{{ VERSION_TAG }}
         ports:
-        - containerPort: 80 
+        - containerPort: 80
+        env:
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-world-api
+spec:
+  selector:
+    app: hello-world-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  

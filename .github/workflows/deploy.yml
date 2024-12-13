@@ -1,6 +1,8 @@
 name: Deploy to Kubernetes
 
 on:
+  schedule:
+    - cron: '0 * * * *'  # Runs every hour
   workflow_dispatch:
     inputs:
       environment:
@@ -13,12 +15,38 @@ on:
           - production
 
 jobs:
-  deploy:
+  check-submodule:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
+      with:
+        submodules: true
+
+    - name: Check for submodule changes
+      id: check_submodule
+      run: |
+        cd hello-world-repo
+        git fetch
+        LOCAL=$(git rev-parse @)
+        REMOTE=$(git rev-parse @{u})
+        if [ "$LOCAL" != "$REMOTE" ]; then
+          echo "Submodule has changed"
+          echo "::set-output name=changed::true"
+        else
+          echo "No changes in submodule"
+          echo "::set-output name=changed::false"
+        fi
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: check-submodule
+    if: needs.check-submodule.outputs.changed == 'true'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: true
 
     - name: Set up Kubernetes
       uses: azure/setup-kubectl@v3
@@ -28,5 +56,11 @@ jobs:
     - name: Deploy to Kubernetes
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        BRANCH_NAME: ${{ env.BRANCH_NAME }}
+        VERSION_TAG: ${{ env.VERSION_TAG }}
       run: |
-        kubectl apply -f k8s/${{ github.event.inputs.environment }}/deployment.yaml
+        if [ "${{ github.ref_name }}" == "develop" ]; then
+          kubectl apply -f k8s/staging/deployment.yaml
+        elif [ "${{ github.ref_name }}" == "main" ]; then
+          kubectl apply -f k8s/production/deployment.yaml
+        fi
