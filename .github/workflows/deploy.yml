@@ -30,6 +30,8 @@ jobs:
         
         # Fetch all branches
         git fetch --all
+
+        git branch
         
         # Check for changes in the 'develop' branch
         git checkout develop
