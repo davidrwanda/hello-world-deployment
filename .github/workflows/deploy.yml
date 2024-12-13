@@ -26,7 +26,7 @@ jobs:
     - name: Check for submodule changes
       id: check_submodule
       run: |
-        cd hello-world-api
+        cd hello-world-repo
         git fetch
         LOCAL=$(git rev-parse @)
         REMOTE=$(git rev-parse @{u})
