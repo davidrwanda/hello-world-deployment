@@ -35,7 +35,7 @@ jobs:
         git branch -r
         
         # Check out the 'develop' branch
-        git checkout -B develop origin/develop
+        git checkout -b develop origin/develop
         
         # Check for changes in the 'develop' branch
         LOCAL_DEVELOP=$(git rev-parse HEAD)
