@@ -28,22 +28,23 @@ jobs:
       run: |
         cd hello-world-repo
         
-        # Fetch all branches
-        git fetch --all
-
-        git branch
+        # Fetch all branches from the remote
+        git fetch origin
+        
+        # List all branches to verify
+        git branch -r
         
         # Check for changes in the 'develop' branch
-        git checkout develop
+        git checkout origin/develop
+        LOCAL_DEVELOP=$(git rev-parse HEAD)
         git fetch origin develop
-        LOCAL_DEVELOP=$(git rev-parse @)
-        REMOTE_DEVELOP=$(git rev-parse @{u})
+        REMOTE_DEVELOP=$(git rev-parse origin/develop)
         
         # Check for changes in the 'main' branch
-        git checkout main
+        git checkout origin/main
+        LOCAL_MAIN=$(git rev-parse HEAD)
         git fetch origin main
-        LOCAL_MAIN=$(git rev-parse @)
-        REMOTE_MAIN=$(git rev-parse @{u})
+        REMOTE_MAIN=$(git rev-parse origin/main)
         
         if [ "$LOCAL_DEVELOP" != "$REMOTE_DEVELOP" ] || [ "$LOCAL_MAIN" != "$REMOTE_MAIN" ]; then
           echo "Submodule has changed"
