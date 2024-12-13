@@ -27,6 +27,7 @@ jobs:
       id: check_submodule
       run: |
         cd hello-world-repo
+        git branch
         git checkout develop
         git fetch origin develop
         LOCAL_DEVELOP=$(git rev-parse @)
