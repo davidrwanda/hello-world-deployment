@@ -27,10 +27,17 @@ jobs:
       id: check_submodule
       run: |
         cd hello-world-repo
-        git fetch
-        LOCAL=$(git rev-parse @)
-        REMOTE=$(git rev-parse @{u})
-        if [ "$LOCAL" != "$REMOTE" ]; then
+        git checkout develop
+        git fetch origin develop
+        LOCAL_DEVELOP=$(git rev-parse @)
+        REMOTE_DEVELOP=$(git rev-parse @{u})
+        
+        git checkout main
+        git fetch origin main
+        LOCAL_MAIN=$(git rev-parse @)
+        REMOTE_MAIN=$(git rev-parse @{u})
+        
+        if [ "$LOCAL_DEVELOP" != "$REMOTE_DEVELOP" ] || [ "$LOCAL_MAIN" != "$REMOTE_MAIN" ]; then
           echo "Submodule has changed"
           echo "::set-output name=changed::true"
         else
