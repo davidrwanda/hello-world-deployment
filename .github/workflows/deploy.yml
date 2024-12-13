@@ -27,26 +27,10 @@ jobs:
       id: check_submodule
       run: |
         cd hello-world-repo
-        
-        # Fetch all branches from the remote
-        git fetch origin
-        
-        # List all branches to verify
-        git branch -r
-        
-        # Check for changes in the 'develop' branch
-        git checkout origin/develop
-        LOCAL_DEVELOP=$(git rev-parse HEAD)
-        git fetch origin develop
-        REMOTE_DEVELOP=$(git rev-parse origin/develop)
-        
-        # Check for changes in the 'main' branch
-        git checkout origin/main
-        LOCAL_MAIN=$(git rev-parse HEAD)
-        git fetch origin main
-        REMOTE_MAIN=$(git rev-parse origin/main)
-        
-        if [ "$LOCAL_DEVELOP" != "$REMOTE_DEVELOP" ] || [ "$LOCAL_MAIN" != "$REMOTE_MAIN" ]; then
+        git fetch
+        LOCAL=$(git rev-parse @)
+        REMOTE=$(git rev-parse @{u})
+        if [ "$LOCAL" != "$REMOTE" ]; then
           echo "Submodule has changed"
           echo "::set-output name=changed::true"
         else
@@ -68,6 +52,14 @@ jobs:
       uses: azure/setup-kubectl@v3
       with:
         version: 'latest'
+
+    - name: Get Branch and Version
+      run: |
+        cd hello-world-repo
+        BRANCH_NAME=$(git symbolic-ref --short HEAD || echo "detached")
+        VERSION_TAG=$(git describe --tags --abbrev=0 || git rev-parse --short HEAD)
+        echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
+        echo "VERSION_TAG=${VERSION_TAG}" >> $GITHUB_ENV
 
     - name: Deploy to Kubernetes
       env:
