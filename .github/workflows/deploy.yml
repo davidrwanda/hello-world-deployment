@@ -27,12 +27,17 @@ jobs:
       id: check_submodule
       run: |
         cd hello-world-repo
-        git branch
+        
+        # Fetch all branches
+        git fetch --all
+        
+        # Check for changes in the 'develop' branch
         git checkout develop
         git fetch origin develop
         LOCAL_DEVELOP=$(git rev-parse @)
         REMOTE_DEVELOP=$(git rev-parse @{u})
         
+        # Check for changes in the 'main' branch
         git checkout main
         git fetch origin main
         LOCAL_MAIN=$(git rev-parse @)
