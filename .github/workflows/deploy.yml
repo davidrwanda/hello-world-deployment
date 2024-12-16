@@ -15,11 +15,14 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+
     steps:
     - name: Checkout code with submodules
       uses: actions/checkout@v3
       with:
-        submodules: true
+        submodules: recursive
 
     - name: Set target branch based on environment
       id: set_branch
@@ -36,14 +39,13 @@ jobs:
     - name: Check for submodule changes
       id: check_submodule
       run: |
-        # Ensure submodules are updated
-        git submodule update --init --recursive
-        
-        # Fetch the target branch
+        cd hello-world-repo  # Navigate to the submodule
+
+        # Fetch the target branch for the submodule
         git fetch origin $TARGET_BRANCH
         
-        # Check out the target branch for submodules
-        git checkout origin/$TARGET_BRANCH
+        # Check out the target branch
+        git checkout $TARGET_BRANCH
         
         # Compare commit hashes
         LOCAL_HASH=$(git rev-parse HEAD)
@@ -55,11 +57,10 @@ jobs:
         else
           echo "No changes detected in $TARGET_BRANCH branch."
           echo "SUBMODULE_CHANGED=false" >> $GITHUB_ENV
-
+        fi
+        
     - name: Deploy to Kubernetes
       if: env.SUBMODULE_CHANGED == 'true'
-      env:
-        KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
       run: |
         if [[ "$TARGET_BRANCH" == "develop" ]]; then
           echo "Deploying to Staging Environment..."
